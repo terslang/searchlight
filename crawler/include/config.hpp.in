@@ -1,0 +1,4 @@
+#define SEARCHLIGHT_CRAWLER_USER_AGENT                                         \
+  "@SEARCHLIGHT_CRAWLER_USER_AGENT_NAME@/@searchlight-crawler_VERSION@"
+
+#define DEFAULT_CRAWL_DELAY @SEARCHLIGHT_DEFAULT_CRAWL_DELAY@
