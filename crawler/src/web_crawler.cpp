@@ -35,7 +35,8 @@ WebCrawler::WebCrawler() {
       std::regex(R"(<a\s+[^>]*href\s*=\s*(?:["']([^"']+)["']|([^\s>]+)))",
                  std::regex::icase);
 
-  title_regex = std::regex(R"(<title>(.*?)</title>)", std::regex::icase);
+  title_regex =
+      std::regex(R"(<title[^>]*>([\s\S]*?)<\/title>)", std::regex::icase);
 }
 
 WebCrawler::~WebCrawler() = default;
