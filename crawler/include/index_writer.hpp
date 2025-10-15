@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 
+#include "options.hpp"
 #include "web_crawler.hpp"
 
 struct sqlite3;
@@ -17,7 +18,8 @@ struct SQLiteStmtDeleter {
 
 class IndexWriter {
 public:
-  explicit IndexWriter(const std::string &db_path);
+  explicit IndexWriter(
+      std::unique_ptr<crawler::DatabaseOptions> db_options);
   ~IndexWriter();
 
   bool InsertPage(const std::string &url, const PageResult &page_result);

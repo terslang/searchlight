@@ -16,7 +16,8 @@ namespace crawler {
 
 class LinkManager {
 public:
-  LinkManager(const std::vector<std::string> &seed_links);
+  LinkManager(const std::vector<std::string> &seed_links,
+              const int default_delay);
 
   void AddDiscoveredLinks(const std::vector<std::string> &links,
                           const std::string &source_link);
@@ -34,6 +35,7 @@ public:
   bool HasEnoughDelay(const std::string &link) const;
 
 private:
+  int default_delay;
   std::unordered_set<std::string> seed_links;
   std::unordered_set<std::string> all_known_links;
   std::queue<std::string> links_to_visit;

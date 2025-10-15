@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 #include "link_manager.hpp"
-#include "config.hpp"
 
 #include <ada.h>
 #include <iostream>
 
+#include "config.hpp"
+#include "options.hpp"
 #include "utils.hpp"
 #include "web_crawler.hpp"
 
 namespace crawler {
 
-LinkManager::LinkManager(const std::vector<std::string> &seed_links) {
+LinkManager::LinkManager(const std::vector<std::string> &seed_links,
+                         const int default_delay) {
+  this->default_delay = default_delay;
   for (const auto &link : seed_links) {
     this->seed_links.insert(link);
     links_to_visit.push(link);
@@ -118,7 +121,7 @@ bool LinkManager::HasEnoughDelay(const std::string &link) const {
   if (visited_hosts.contains(host)) {
     int crawl_delay = robots_txt_parsers.at(host)
                           ->GetCrawlDelay(SEARCHLIGHT_CRAWLER_USER_AGENT)
-                          .value_or(DEFAULT_CRAWL_DELAY);
+                          .value_or(default_delay);
     return std::chrono::steady_clock::now() - visited_hosts.at(host) >=
            std::chrono::seconds(crawl_delay);
   }

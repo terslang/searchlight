@@ -2,6 +2,7 @@
 
 #include "config.hpp"
 #include "index_writer.hpp"
+#include <iostream>
 
 namespace crawler {
 void SQLiteDbDeleter::operator()(sqlite3 *db) const {
@@ -16,10 +17,11 @@ void SQLiteStmtDeleter::operator()(sqlite3_stmt *stmt) const {
   }
 }
 
-IndexWriter::IndexWriter(const std::string &db_path) {
+IndexWriter::IndexWriter(
+    std::unique_ptr<crawler::DatabaseOptions> db_options) {
   // Open the SQLite database
   sqlite3 *raw_db_handle = nullptr;
-  if (sqlite3_open(db_path.c_str(), &raw_db_handle) != SQLITE_OK) {
+  if (sqlite3_open(db_options->db_path.c_str(), &raw_db_handle) != SQLITE_OK) {
     std::string error_msg = sqlite3_errmsg(raw_db_handle);
     sqlite3_close(raw_db_handle);
     throw std::runtime_error("Failed to open SQLite database: " + error_msg);
@@ -34,8 +36,8 @@ IndexWriter::IndexWriter(const std::string &db_path) {
   }
 
   char *err_msg = nullptr;
-  if (sqlite3_load_extension(db.get(), FTS_HTML_EXT_PATH, 0, &err_msg) !=
-      SQLITE_OK) {
+  if (sqlite3_load_extension(db.get(), db_options->fts_html_ext_path.c_str(), 0,
+                             &err_msg) != SQLITE_OK) {
     std::string error_msg = err_msg ? err_msg : "Unknown error";
     sqlite3_free(err_msg);
     throw std::runtime_error("Failed to load FTS HTML extension: " + error_msg);
@@ -76,10 +78,9 @@ bool IndexWriter::InsertPage(const std::string &url,
   }
 
   if (sqlite3_step(insert_stmt.get()) != SQLITE_DONE) {
-    std::string error_msg = sqlite3_errmsg(db.get());
+    std::cerr << "Failed to insert page into SQLite database: "
+              << sqlite3_errmsg(db.get()) << std::endl;
     sqlite3_reset(insert_stmt.get());
-    throw std::runtime_error("Failed to insert page into SQLite database: " +
-                             error_msg);
     return false;
   }
 

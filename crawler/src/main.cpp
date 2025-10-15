@@ -6,12 +6,17 @@
 #include "config.hpp"
 #include "index_writer.hpp"
 #include "link_manager.hpp"
+#include "options.hpp"
 #include "web_crawler.hpp"
+#include <yaml-cpp/yaml.h>
 
 int main() {
-  crawler::LinkManager link_manager({"https://theakash.dev"});
+  YAML::Node options_node = YAML::LoadFile(OPTIONS_FILE_PATH);
+  crawler::Options options(options_node);
+  crawler::LinkManager link_manager(options.seed_links,
+                                    options.crawl_options->default_delay);
   crawler::WebCrawler web_crawler;
-  crawler::IndexWriter index_writer(std::string(DB_PATH));
+  crawler::IndexWriter index_writer(std::move(options.database_options));
 
   while (link_manager.HasLinksToVisit()) {
     std::string link = link_manager.GetNextLinkToVisit();
@@ -39,21 +44,6 @@ int main() {
       link_manager.AddDiscoveredLinks(page_result->links, link);
 
       if (page_result->content.has_value()) {
-        if (page_result->title.has_value()) {
-          std::cout << "Page title: " << page_result->title.value()
-                    << std::endl;
-        } else {
-          std::cout << "Page title is missing for: " << link << std::endl;
-        }
-
-        if (page_result->content->length() > 100) {
-          std::cout << "Page content (first 100 chars): "
-                    << page_result->content->substr(0, 100) << "..."
-                    << std::endl;
-        } else {
-          std::cout << "Page content: " << *page_result->content << std::endl;
-        }
-
         std::cout << "Inserting page into index: " << link << std::endl;
         if (index_writer.InsertPage(link, *page_result)) {
           std::cout << "Page inserted successfully." << std::endl;

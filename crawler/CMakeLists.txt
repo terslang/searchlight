@@ -12,6 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(CURL REQUIRED)
 find_package(ada REQUIRED)
 find_package(SQLite3 REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 # Config
 set(SEARCHLIGHT_CRAWLER_USER_AGENT_NAME
@@ -26,6 +27,9 @@ set(SEARCHLIGHT_DB_PATH
 set(SEARCHLIGHT_FTS_HTML_EXT_PATH
     "/usr/local/lib/fts5html.so"
     CACHE STRING "Path to the FTS5 HTML extension")
+set(SEARCHLIGHT_OPTIONS_FILE_PATH
+    "/etc/searchlight/options.yaml"
+    CACHE STRING "Path to the Searchlight options file")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/config.hpp.in"
                "${CMAKE_CURRENT_BINARY_DIR}/config/config.hpp")
 
@@ -36,5 +40,6 @@ add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_include_directories(${PROJECT_NAME}
                            PRIVATE include ${CMAKE_CURRENT_BINARY_DIR}/config)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${CURL_LIBRARIES} ada::ada
-                                              SQLite::SQLite3)
+target_link_libraries(
+  ${PROJECT_NAME} PRIVATE ${CURL_LIBRARIES} ada::ada SQLite::SQLite3
+                          yaml-cpp::yaml-cpp)
